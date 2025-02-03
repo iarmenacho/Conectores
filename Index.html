@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Generador de Requisiciones</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <h1>Generador de Requisiciones</h1>
+  <form id="uploadForm">
+    <label for="deposito">Depósito:</label>
+    <select id="deposito" required>
+      <option value="">Selecciona un depósito</option>
+      <option value="Depósito 1">Depósito 1</option>
+      <option value="Depósito 2">Depósito 2</option>
+    </select>
+
+    <label for="excelFile">Archivo de Excel:</label>
+    <input type="file" id="excelFile" accept=".xls,.xlsx" required>
+
+    <button type="submit">Cargar y Generar</button>
+  </form>
+
+  <div id="output">
+    <h2>Datos Cargados</h2>
+    <table id="dataTable" border="1">
+      <thead>
+        <tr>
+          <th>Columna 1</th>
+          <th>Columna 2</th>
+          <th>...</th>
+        </tr>
+      </thead>
+      <tbody>
+        <!-- Datos cargados aquí -->
+      </tbody>
+    </table>
+  </div>
+
+  <script>
+    document.getElementById('uploadForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const deposito = document.getElementById('deposito').value;
+      const fileInput = document.getElementById('excelFile');
+      const file = fileInput.files[0];
+
+      if (!file || !deposito) {
+        alert('Por favor, selecciona un archivo y un depósito.');
+        return;
+      }
+
+      const formData = new FormData();
+      formData.append('excelFile', file);
+      formData.append('deposito', deposito);
+
+      try {
+        const response = await fetch('/process', {
+          method: 'POST',
+          body: formData,
+        });
+
+        if (response.ok) {
+          const blob = await response.blob();
+          const url = window.URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = 'Requisicion.txt';
+          a.click();
+        } else {
+          alert('Error al procesar el archivo.');
+        }
+      } catch (error) {
+        console.error(error);
+        alert('Ocurrió un error inesperado.');
+      }
+    });
+  </script>
+</body>
+</html>
